@@ -1,453 +1,128 @@
 package com.recapify.app;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Typeface;
+import android.app.*;
+import android.content.*;
+import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.SeekBar;
-import android.widget.Space;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.*;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.*;
+import java.util.*;
 
 public class MainActivity extends Activity {
-
-    private static final int BG = Color.rgb(6, 10, 20);
-    private static final int CARD = Color.rgb(15, 22, 38);
-    private static final int CARD2 = Color.rgb(20, 29, 50);
-    private static final int PURPLE = Color.rgb(124, 92, 255);
-    private static final int CYAN = Color.rgb(35, 213, 255);
-    private static final int WHITE = Color.rgb(244, 247, 255);
-    private static final int MUTED = Color.rgb(158, 171, 199);
-    private static final int GREEN = Color.rgb(67, 222, 148);
-    private static final int ORANGE = Color.rgb(255, 177, 84);
-
-    private LinearLayout root;
-    private LinearLayout content;
-    private TextView title;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Window w = getWindow();
-        w.setStatusBarColor(BG);
-        w.setNavigationBarColor(BG);
-        showShell();
-        showHome();
+    private static final int BG=Color.rgb(7,10,20), CARD=Color.rgb(16,22,38), CARD2=Color.rgb(23,31,52);
+    private static final int PURPLE=Color.rgb(132,91,255), CYAN=Color.rgb(42,211,255), GREEN=Color.rgb(64,224,151);
+    private static final int ORANGE=Color.rgb(255,177,79), RED=Color.rgb(255,101,125), WHITE=Color.rgb(245,247,255), MUTED=Color.rgb(153,166,195);
+    private LinearLayout root,content; private TextView pageTitle,navHome,navCatch,navTasks,navAI,navMore;
+    private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
+    @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);buildShell();home();}
+    private TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);if(bold)t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);return t;}
+    private GradientDrawable bg(int c,int r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp(r));return g;}
+    private GradientDrawable stroke(int fill,int line,int r){GradientDrawable g=bg(fill,r);g.setStroke(dp(1),line);return g;}
+    private LinearLayout box(int c){LinearLayout x=new LinearLayout(this);x.setOrientation(LinearLayout.VERTICAL);x.setPadding(dp(16),dp(16),dp(16),dp(16));x.setBackground(bg(c,22));return x;}
+    private LinearLayout.LayoutParams lp(int w,int h){return new LinearLayout.LayoutParams(w,h);}
+    private LinearLayout.LayoutParams wt(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1);p.setMargins(dp(4),0,dp(4),0);return p;}
+    private void margin(View v,int l,int t,int r,int b){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)v.getLayoutParams();if(p==null)p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(dp(l),dp(t),dp(r),dp(b));v.setLayoutParams(p);}
+    private TextView button(String s,int color){TextView t=tv(s,14,WHITE,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(14),dp(14),dp(14),dp(14));t.setBackground(bg(color,17));t.setClickable(true);return t;}
+    private void buildShell(){
+        root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(dp(15),dp(8),dp(15),dp(8));root.setBackgroundColor(BG);
+        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);
+        TextView logo=tv("✦",26,WHITE,true);logo.setGravity(Gravity.CENTER);logo.setBackground(bg(PURPLE,16));head.addView(logo,lp(dp(46),dp(46)));
+        LinearLayout brand=new LinearLayout(this);brand.setOrientation(LinearLayout.VERTICAL);brand.setPadding(dp(11),0,0,0);
+        pageTitle=tv("RECAPIFY",21,WHITE,true);brand.addView(pageTitle);brand.addView(tv("AI MEETING INTELLIGENCE",9,CYAN,true));head.addView(brand,lp(0,-2));((LinearLayout.LayoutParams)brand.getLayoutParams()).weight=1;
+        TextView bell=tv("♢",23,WHITE,true);bell.setGravity(Gravity.CENTER);bell.setBackground(stroke(CARD2,Color.rgb(47,61,88),15));bell.setOnClickListener(v->notifications());head.addView(bell,lp(dp(44),dp(44)));
+        TextView avatar=tv("YR",11,WHITE,true);avatar.setGravity(Gravity.CENTER);avatar.setBackground(bg(CARD2,30));avatar.setOnClickListener(v->profile());head.addView(avatar,lp(dp(44),dp(44)));root.addView(head);
+        ScrollView sv=new ScrollView(this);sv.setFillViewport(true);content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(0,dp(18),0,dp(20));sv.addView(content);root.addView(sv,lp(-1,0));((LinearLayout.LayoutParams)sv.getLayoutParams()).weight=1;
+        LinearLayout nav=new LinearLayout(this);nav.setPadding(dp(3),dp(5),dp(3),dp(5));nav.setBackground(bg(CARD,21));
+        navHome=navItem("⌂","Home");navCatch=navItem("✦","Catch Up");navTasks=navItem("✓","Tasks");navAI=navItem("◉","AI");navMore=navItem("⋯","More");
+        nav.addView(navHome,wt());nav.addView(navCatch,wt());nav.addView(navTasks,wt());nav.addView(navAI,wt());nav.addView(navMore,wt());
+        navHome.setOnClickListener(v->home());navCatch.setOnClickListener(v->catchUp());navTasks.setOnClickListener(v->tasks());navAI.setOnClickListener(v->ai());navMore.setOnClickListener(v->more());root.addView(nav);setContentView(root);
     }
-
-    private void showShell() {
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(BG);
-        root.setPadding(dp(16), dp(10), dp(16), dp(8));
-
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
-
-        TextView logo = text("✦", 28, CYAN, true);
-        logo.setGravity(Gravity.CENTER);
-        logo.setBackground(round(PURPLE, 18));
-        LinearLayout.LayoutParams lpLogo = new LinearLayout.LayoutParams(dp(48), dp(48));
-        top.addView(logo, lpLogo);
-
-        LinearLayout nameWrap = new LinearLayout(this);
-        nameWrap.setOrientation(LinearLayout.VERTICAL);
-        nameWrap.setPadding(dp(12), 0, 0, 0);
-        title = text("RECAPIFY", 22, WHITE, true);
-        TextView tag = text("Never Miss What Matters", 12, MUTED, false);
-        nameWrap.addView(title);
-        nameWrap.addView(tag);
-        top.addView(nameWrap, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-
-        TextView profile = text("YR", 13, WHITE, true);
-        profile.setGravity(Gravity.CENTER);
-        profile.setBackground(round(CARD2, 40));
-        top.addView(profile, new LinearLayout.LayoutParams(dp(42), dp(42)));
-        root.addView(top);
-
-        ScrollView scroll = new ScrollView(this);
-        scroll.setFillViewport(true);
-        content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(0, dp(18), 0, dp(18));
-        scroll.addView(content, new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
-
-        root.addView(navBar());
-        setContentView(root);
+    private TextView navItem(String icon,String label){TextView t=tv(icon+"\n"+label,10,MUTED,true);t.setGravity(Gravity.CENTER);t.setPadding(0,dp(5),0,dp(5));return t;}
+    private void clear(String title){content.removeAllViews();pageTitle.setText(title);navHome.setTextColor(MUTED);navCatch.setTextColor(MUTED);navTasks.setTextColor(MUTED);navAI.setTextColor(MUTED);navMore.setTextColor(MUTED);}
+    private void active(TextView t){t.setTextColor(CYAN);}
+    private void add(View v){content.addView(v);}
+    private void add(View v,int top){margin(v,0,top,0,0);add(v);}
+    private TextView section(String s){TextView t=tv(s,18,WHITE,true);t.setPadding(0,dp(20),0,dp(9));return t;}
+    private LinearLayout stat(String n,String l,int c){LinearLayout b=box(CARD);b.setGravity(Gravity.CENTER);b.addView(tv(n,24,c,true));TextView x=tv(l,10,MUTED,false);x.setGravity(Gravity.CENTER);b.addView(x);return b;}
+    private void home(){
+        clear("RECAPIFY");active(navHome);
+        TextView greet=tv("Good afternoon, Yaswanth 👋",25,WHITE,true);add(greet);
+        add(tv("Your meetings, simplified by AI.",13,MUTED,false),3);
+        LinearLayout stats=new LinearLayout(this);stats.addView(stat("12","Meetings",CYAN),wt());stats.addView(stat("4.2h","Time saved",GREEN),wt());stats.addView(stat("87%","Focus",PURPLE),wt());add(stats,18);
+        LinearLayout hero=box(PURPLE);
+        TextView badge=tv("  ✦  SMART CATCH-UP  ",11,WHITE,true);badge.setGravity(Gravity.CENTER);badge.setBackground(bg(Color.argb(50,255,255,255),20));hero.addView(badge,lp(-2,dp(30)));
+        hero.addView(tv("Joined late?",25,WHITE,true));hero.addView(tv("Get only what you missed —\nnot the whole meeting.",15,Color.rgb(225,228,250),false));
+        TextView cb=button("✦  Generate My Catch-Up",Color.rgb(105,67,225));cb.setOnClickListener(v->catchUp());hero.addView(cb,lp(-1,-2));add(hero,18);
+        add(section("Quick actions"));
+        LinearLayout qa=new LinearLayout(this);
+        TextView a=button("＋ New Meeting",CARD2);a.setOnClickListener(v->pickFile());qa.addView(a,wt());
+        TextView b=button("◉ Ask AI",CARD2);b.setOnClickListener(v->ai());qa.addView(b,wt());add(qa);
+        LinearLayout qa2=new LinearLayout(this);TextView c=button("✓ My Tasks",CARD2);c.setOnClickListener(v->tasks());qa2.addView(c,wt());TextView d=button("▥ Insights",CARD2);d.setOnClickListener(v->analytics());qa2.addView(d,wt());add(qa2,8);
+        add(section("Upcoming"));
+        meetingCard("DSA — Graph Algorithms","Today • 2:00 PM • 56 min",CYAN,"LIVE IN 48 MIN");
+        add(section("Recent intelligence"));
+        recent("Artificial Intelligence — Unit 4","42 min • 4 topics • 2 tasks",PURPLE);
+        recent("Software Engineering","35 min • 6 topics • 1 deadline",GREEN);
     }
-
-    private LinearLayout navBar() {
-        LinearLayout nav = new LinearLayout(this);
-        nav.setOrientation(LinearLayout.HORIZONTAL);
-        nav.setPadding(dp(4), dp(6), dp(4), dp(6));
-        nav.setBackground(round(CARD, 22));
-        nav.addView(navItem("⌂\nHome", new View.OnClickListener(){ public void onClick(View v){ showHome(); }}), weight());
-        nav.addView(navItem("✦\nCatch Up", new View.OnClickListener(){ public void onClick(View v){ showCatchUp(); }}), weight());
-        nav.addView(navItem("✓\nTasks", new View.OnClickListener(){ public void onClick(View v){ showTasks(); }}), weight());
-        nav.addView(navItem("◉\nAI", new View.OnClickListener(){ public void onClick(View v){ showAI(); }}), weight());
-        nav.addView(navItem("▥\nAnalytics", new View.OnClickListener(){ public void onClick(View v){ showAnalytics(); }}), weight());
-        return nav;
+    private void meetingCard(String name,String meta,int accent,String badge){
+        LinearLayout b=box(CARD);LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);left.addView(tv(name,16,WHITE,true));left.addView(tv(meta,12,MUTED,false));row.addView(left,lp(0,-2));((LinearLayout.LayoutParams)left.getLayoutParams()).weight=1;
+        TextView tag=tv(badge,9,accent,true);tag.setGravity(Gravity.CENTER);tag.setPadding(dp(8),dp(7),dp(8),dp(7));tag.setBackground(stroke(Color.TRANSPARENT,accent,10));row.addView(tag);b.addView(row);
+        b.setOnClickListener(v->meetingDetails(name));add(b,7);
     }
-
-    private LinearLayout.LayoutParams weight() {
-        return new LinearLayout.LayoutParams(0, dp(58), 1);
+    private void recent(String n,String m,int c){LinearLayout b=box(CARD);b.setOrientation(LinearLayout.HORIZONTAL);TextView icon=tv("✦",20,c,true);icon.setGravity(Gravity.CENTER);icon.setBackground(bg(CARD2,14));b.addView(icon,lp(dp(44),dp(44)));LinearLayout x=new LinearLayout(this);x.setOrientation(LinearLayout.VERTICAL);x.setPadding(dp(12),0,0,0);x.addView(tv(n,15,WHITE,true));x.addView(tv(m,11,MUTED,false));b.addView(x,lp(0,-2));((LinearLayout.LayoutParams)x.getLayoutParams()).weight=1;b.setOnClickListener(v->meetingDetails(n));add(b,7);}
+    private void catchUp(){
+        clear("CATCH UP");active(navCatch);add(tv("I Joined Late ✨",27,WHITE,true));add(tv("Choose where you joined and Recapify will build a focused recap.",13,MUTED,false),4);
+        final TextView mins=tv("20 minutes late",27,CYAN,true);mins.setGravity(Gravity.CENTER);add(mins,20);
+        SeekBar sb=new SeekBar(this);sb.setMax(55);sb.setProgress(15);add(sb);sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean f){mins.setText((p+5)+" minutes late");}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        LinearLayout radar=box(CARD);radar.addView(tv("CATCH-UP RADAR",11,PURPLE,true));
+        String[] times={"00:00","06:40","13:20","20:00","28:10","36:00"};String[] topics={"Welcome & agenda","Problem statement","ML concepts","YOU JOINED HERE ↑","Assignment discussion","Q&A and wrap-up"};int[] cs={PURPLE,CYAN,ORANGE,GREEN,MUTED,MUTED};
+        for(int i=0;i<times.length;i++){LinearLayout r=new LinearLayout(this);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(0,dp(11),0,0);r.addView(tv("●",13,cs[i],true),lp(dp(26),-2));r.addView(tv(times[i],11,MUTED,false),lp(dp(54),-2));TextView tt=tv(topics[i],13,i==3?WHITE:MUTED,i==3);r.addView(tt,lp(0,-2));((LinearLayout.LayoutParams)tt.getLayoutParams()).weight=1;if(i==3)r.addView(tv("MISSED",9,GREEN,true));radar.addView(r);}add(radar,18);
+        TextView gen=button("✨  Generate My Catch-Up",PURPLE);gen.setOnClickListener(v->catchResult());add(gen,15);
+        TextView upload=button("＋  Upload a meeting / recording",CARD2);upload.setOnClickListener(v->pickFile());add(upload,8);
     }
-
-    private TextView navItem(String s, View.OnClickListener l) {
-        TextView t = text(s, 10, MUTED, false);
-        t.setGravity(Gravity.CENTER);
-        t.setOnClickListener(l);
-        return t;
+    private void catchResult(){
+        clear("YOUR CATCH-UP");add(tv("You're caught up 🎉",27,WHITE,true));add(tv("A focused recap of the 20 minutes before you joined.",13,MUTED,false),4);
+        result("⚡ 30-second summary","The class introduced Machine Learning, explained how models learn from data, and compared supervised and unsupervised learning.",CYAN);
+        result("📌 Key points","• Supervised learning → labelled data\n• Unsupervised learning → unlabelled data\n• Classification predicts categories\n• Clustering groups similar data",PURPLE);
+        result("📝 Action item detected","Prepare short notes on Machine Learning algorithms.\nDeadline: Friday",ORANGE);
+        result("❓ Suggested question","Which algorithm should we use for the assignment?",GREEN);
+        TextView ask=button("◉ Ask AI about this meeting",CARD2);ask.setOnClickListener(v->ai());add(ask,4);
     }
-
-    private void clear(String screenTitle) {
-        content.removeAllViews();
-        title.setText(screenTitle);
+    private void result(String h,String body,int c){LinearLayout b=box(CARD);b.addView(tv(h,15,c,true));TextView x=tv(body,13,Color.rgb(218,224,241),false);x.setPadding(0,dp(8),0,0);x.setLineSpacing(0,1.18f);b.addView(x);add(b,9);}
+    private void tasks(){
+        clear("TASKS");active(navTasks);add(tv("Action Center",27,WHITE,true));add(tv("Everything Recapify detected across your meetings.",13,MUTED,false),4);
+        task("Prepare Machine Learning notes","Due Friday","HIGH",ORANGE);task("Complete DAA lab observation","Due tomorrow","URGENT",RED);task("Review project synopsis","This week","NORMAL",CYAN);task("Create Recapify demo","Before presentation","PROJECT",PURPLE);
+        TextView add=button("＋  Add personal task",CARD2);add.setOnClickListener(v->taskDialog());this.add(add,5);
     }
-
-    private void showHome() {
-        clear("RECAPIFY");
-        content.addView(text("Good evening, Yaswanth 👋", 25, WHITE, true));
-        TextView sub = text("Ready to catch up without missing the flow?", 14, MUTED, false);
-        sub.setPadding(0, dp(5), 0, dp(18));
-        content.addView(sub);
-
-        LinearLayout stats1 = new LinearLayout(this);
-        stats1.setOrientation(LinearLayout.HORIZONTAL);
-        stats1.addView(stat("12", "Meetings", CYAN), smallWeight());
-        stats1.addView(stat("4.2h", "Time Saved", GREEN), smallWeight());
-        content.addView(stats1);
-
-        LinearLayout stats2 = new LinearLayout(this);
-        stats2.setOrientation(LinearLayout.HORIZONTAL);
-        stats2.setPadding(0, dp(10), 0, dp(18));
-        stats2.addView(stat("8", "Tasks", ORANGE), smallWeight());
-        stats2.addView(stat("87%", "Focus Score", PURPLE), smallWeight());
-        content.addView(stats2);
-
-        LinearLayout hero = panel(PURPLE);
-        hero.addView(text("✨ I JOINED LATE", 14, CYAN, true));
-        TextView h = text("Missed part of a class?\nCatch up in under a minute.", 24, WHITE, true);
-        h.setPadding(0, dp(10), 0, dp(8));
-        hero.addView(h);
-        hero.addView(text("Recapify finds only the discussion before you joined and turns it into topics, tasks, deadlines and questions.", 14, Color.rgb(219,225,242), false));
-        TextView catchBtn = action("✦  Catch Me Up", PURPLE);
-        catchBtn.setOnClickListener(new View.OnClickListener(){ public void onClick(View v){ showCatchUp(); }});
-        hero.addView(catchBtn, blockButtonParams());
-        content.addView(hero);
-
-        TextView sec = text("Quick actions", 18, WHITE, true);
-        sec.setPadding(0, dp(20), 0, dp(10));
-        content.addView(sec);
-
-        LinearLayout actions = new LinearLayout(this);
-        actions.setOrientation(LinearLayout.HORIZONTAL);
-        TextView upload = action("＋ New Meeting", CARD2);
-        upload.setOnClickListener(new View.OnClickListener(){ public void onClick(View v){ openMeetingFile(); }});
-        TextView ai = action("◉ Ask Recapify", CARD2);
-        ai.setOnClickListener(new View.OnClickListener(){ public void onClick(View v){ showAI(); }});
-        actions.addView(upload, smallWeight());
-        actions.addView(ai, smallWeight());
-        content.addView(actions);
-
-        TextView recent = text("Recent meeting", 18, WHITE, true);
-        recent.setPadding(0, dp(20), 0, dp(10));
-        content.addView(recent);
-        LinearLayout meeting = panel(CARD);
-        meeting.addView(text("Artificial Intelligence — Unit 4", 17, WHITE, true));
-        meeting.addView(text("Today • 42 min • Classroom", 12, MUTED, false));
-        TextView chips = text("4 Topics     2 Tasks     1 Deadline", 13, CYAN, true);
-        chips.setPadding(0, dp(12), 0, 0);
-        meeting.addView(chips);
-        content.addView(meeting);
+    private void task(String name,String due,String badge,int c){LinearLayout b=box(CARD);b.setOrientation(LinearLayout.HORIZONTAL);TextView check=tv("○",23,c,true);check.setGravity(Gravity.CENTER);b.addView(check,lp(dp(38),dp(38)));LinearLayout x=new LinearLayout(this);x.setOrientation(LinearLayout.VERTICAL);x.setPadding(dp(12),0,0,0);x.addView(tv(name,14,WHITE,true));x.addView(tv(due+"  •  "+badge,11,c,true));b.addView(x,lp(0,-2));((LinearLayout.LayoutParams)x.getLayoutParams()).weight=1;check.setOnClickListener(v->{check.setText("✓");check.setTextColor(GREEN);Toast.makeText(this,"Task completed",Toast.LENGTH_SHORT).show();});add(b,8);}
+    private void ai(){
+        clear("ASK RECAPIFY");active(navAI);add(tv("Recapify AI ✦",27,WHITE,true));add(tv("Ask questions from your meeting knowledge base.",13,MUTED,false),4);
+        LinearLayout chips=new LinearLayout(this);String[] q={"What was decided?","Show deadlines","Summarize Unit 4"};for(String s:q){TextView c=button(s,CARD2);c.setTextSize(11);c.setOnClickListener(v->askAnswer((String)((TextView)v).getText()));chips.addView(c,wt());}add(chips,14);
+        final LinearLayout chat=box(CARD);chat.addView(tv("✦  Recapify AI",12,CYAN,true));chat.addView(tv("I can answer questions about topics, decisions, action items, deadlines and missed discussions.",14,WHITE,false));add(chat,14);
+        final EditText input=new EditText(this);input.setTextColor(WHITE);input.setHintTextColor(MUTED);input.setHint("Ask anything…");input.setSingleLine(false);input.setMinHeight(dp(56));input.setPadding(dp(14),dp(10),dp(14),dp(10));input.setBackground(stroke(CARD2,Color.rgb(48,63,92),17));add(input);
+        TextView send=button("Send  ➜",PURPLE);send.setOnClickListener(v->{String s=input.getText().toString().trim();if(s.isEmpty()){Toast.makeText(this,"Type a question",Toast.LENGTH_SHORT).show();return;}chat.addView(tv("You  •  "+s,13,WHITE,true));chat.addView(tv("Recapify  •  Based on your meeting, the main assignment is Machine Learning notes, with a Friday deadline. The discussion also covered supervised vs unsupervised learning.",13,CYAN,false));input.setText("");});add(send,8);
     }
-
-    private void showCatchUp() {
-        clear("CATCH UP");
-        content.addView(text("I Joined Late ✨", 27, WHITE, true));
-        TextView desc = text("Tell Recapify how many minutes you missed.", 14, MUTED, false);
-        desc.setPadding(0, dp(4), 0, dp(20));
-        content.addView(desc);
-
-        final TextView minutes = text("20 minutes late", 26, CYAN, true);
-        minutes.setGravity(Gravity.CENTER);
-        minutes.setPadding(0, dp(18), 0, dp(8));
-        content.addView(minutes);
-
-        SeekBar seek = new SeekBar(this);
-        seek.setMax(55);
-        seek.setProgress(15);
-        seek.setPadding(dp(16), 0, dp(16), 0);
-        content.addView(seek);
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onProgressChanged(SeekBar s, int p, boolean f){ minutes.setText((p + 5) + " minutes late"); }
-            public void onStartTrackingTouch(SeekBar s){}
-            public void onStopTrackingTouch(SeekBar s){}
-        });
-
-        LinearLayout radar = panel(CARD);
-        radar.addView(text("CATCH-UP RADAR", 12, PURPLE, true));
-        radar.addView(topicRow("00:00", "Introduction", PURPLE, true));
-        radar.addView(topicRow("08:00", "Machine Learning Basics", CYAN, true));
-        radar.addView(topicRow("16:00", "Supervised vs Unsupervised", ORANGE, true));
-        radar.addView(topicRow("20:00", "YOU JOINED HERE ↑", GREEN, false));
-        radar.addView(topicRow("28:00", "Assignment Discussion", MUTED, false));
-        content.addView(radar);
-
-        TextView btn = action("✨ Generate My Catch-Up", PURPLE);
-        btn.setOnClickListener(new View.OnClickListener(){ public void onClick(View v){ showCatchResult(); }});
-        content.addView(btn, blockButtonParams());
+    private void askAnswer(String s){Toast.makeText(this,s+" — see AI response below",Toast.LENGTH_SHORT).show();}
+    private void analytics(){clear("INSIGHTS");active(navMore);add(tv("Meeting Intelligence",27,WHITE,true));add(tv("Your productivity snapshot powered by Recapify.",13,MUTED,false),4);
+        LinearLayout a=new LinearLayout(this);a.addView(stat("4.2h","Time saved",GREEN),wt());a.addView(stat("87%","Topics captured",CYAN),wt());add(a,18);
+        LinearLayout b=new LinearLayout(this);b.addView(stat("14","Key moments",ORANGE),wt());b.addView(stat("7","Questions",PURPLE),wt());add(b,8);
+        LinearLayout chart=box(CARD);chart.addView(tv("WEEKLY RECOVERY",11,PURPLE,true));String[] days={"MON","TUE","WED","THU","FRI","SAT","SUN"};int[] vals={42,65,35,78,58,84,70};for(int i=0;i<7;i++){LinearLayout r=new LinearLayout(this);r.setGravity(Gravity.CENTER_VERTICAL);r.addView(tv(days[i],10,MUTED,true),lp(dp(40),-2));ProgressBar p=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);p.setMax(100);p.setProgress(vals[i]);p.setProgressTintList(android.content.res.ColorStateList.valueOf(i==5?CYAN:PURPLE));r.addView(p,lp(0,dp(12)));((LinearLayout.LayoutParams)p.getLayoutParams()).weight=1;r.addView(tv(vals[i]+"%",11,WHITE,true),lp(dp(42),-2));chart.addView(r,lp(-1,dp(25)));}add(chart,18);
+        LinearLayout insight=box(CARD2);insight.addView(tv("✦  SMART INSIGHT",11,CYAN,true));insight.addView(tv("You recovered the most time on Saturday. Short catch-ups are keeping your meeting workload manageable.",14,WHITE,false));add(insight,10);
     }
-
-    private void showCatchResult() {
-        clear("YOUR CATCH-UP");
-        content.addView(text("You’re caught up 🎉", 27, WHITE, true));
-        TextView saved = text("Recapify summarized your missed 20 minutes.", 14, MUTED, false);
-        saved.setPadding(0, dp(5), 0, dp(16));
-        content.addView(saved);
-
-        addResultCard("⚡ 30-second summary", "The class introduced Machine Learning, explained how systems learn from data, and compared supervised learning with unsupervised learning.", CYAN);
-        addResultCard("📌 Important points", "• Supervised learning uses labelled data\n• Unsupervised learning uses unlabelled data\n• Classification predicts categories\n• Clustering groups similar data", PURPLE);
-        addResultCard("📝 Assignment detected", "Prepare short notes on Machine Learning algorithms.\nDeadline: Friday", ORANGE);
-        addResultCard("💡 Suggested question", "“Sir, which algorithm should we use for the assignment?”", GREEN);
-
-        TextView ai = action("◉ Ask Recapify About This Meeting", CARD2);
-        ai.setOnClickListener(new View.OnClickListener(){ public void onClick(View v){ showAI(); }});
-        content.addView(ai, blockButtonParams());
-    }
-
-    private void addResultCard(String head, String body, int accent) {
-        LinearLayout box = panel(CARD);
-        box.addView(text(head, 16, accent, true));
-        TextView b = text(body, 14, Color.rgb(218,225,242), false);
-        b.setPadding(0, dp(8), 0, 0);
-        b.setLineSpacing(0, 1.2f);
-        box.addView(b);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.setMargins(0, 0, 0, dp(10));
-        content.addView(box, p);
-    }
-
-    private void showTasks() {
-        clear("TASKS");
-        content.addView(text("Action Items", 27, WHITE, true));
-        TextView d = text("Automatically detected from your meetings.", 14, MUTED, false);
-        d.setPadding(0, dp(5), 0, dp(18));
-        content.addView(d);
-        addTask("Prepare Machine Learning notes", "Due Friday", ORANGE, "HIGH");
-        addTask("Complete DAA lab observation", "Due tomorrow", Color.rgb(255,105,120), "URGENT");
-        addTask("Review project synopsis", "This week", CYAN, "NORMAL");
-        addTask("Create Recapify demo recording", "Before presentation", PURPLE, "PROJECT");
-    }
-
-    private void addTask(String name, String due, int c, String badge) {
-        LinearLayout box = panel(CARD);
-        LinearLayout line = new LinearLayout(this);
-        line.setOrientation(LinearLayout.HORIZONTAL);
-        TextView check = text("✓", 18, c, true);
-        check.setGravity(Gravity.CENTER);
-        check.setBackground(round(CARD2, 30));
-        line.addView(check, new LinearLayout.LayoutParams(dp(38), dp(38)));
-        LinearLayout t = new LinearLayout(this);
-        t.setOrientation(LinearLayout.VERTICAL);
-        t.setPadding(dp(12),0,0,0);
-        t.addView(text(name, 15, WHITE, true));
-        t.addView(text(due + "  •  " + badge, 12, c, false));
-        line.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1));
-        box.addView(line);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.setMargins(0,0,0,dp(10));
-        content.addView(box,p);
-    }
-
-    private void showAI() {
-        clear("ASK RECAPIFY");
-        content.addView(text("Ask anything about your meeting", 25, WHITE, true));
-        TextView hint = text("Try: “What assignment did sir give?”", 14, MUTED, false);
-        hint.setPadding(0, dp(5), 0, dp(18));
-        content.addView(hint);
-
-        final LinearLayout chat = panel(CARD);
-        TextView bot = text("✦ Recapify AI", 13, CYAN, true);
-        chat.addView(bot);
-        TextView hello = text("I’m ready. Ask me about topics, decisions, assignments, deadlines, or anything discussed in the meeting.", 14, WHITE, false);
-        hello.setPadding(0,dp(8),0,0);
-        chat.addView(hello);
-        content.addView(chat);
-
-        final EditText input = new EditText(this);
-        input.setTextColor(WHITE);
-        input.setHintTextColor(MUTED);
-        input.setHint("Ask Recapify...");
-        input.setSingleLine(false);
-        input.setMinHeight(dp(54));
-        input.setPadding(dp(16),dp(12),dp(16),dp(12));
-        input.setBackground(round(CARD2,18));
-        LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        ip.setMargins(0,dp(14),0,dp(10));
-        content.addView(input,ip);
-
-        TextView send = action("Send ✦", PURPLE);
-        send.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
-                String q = input.getText().toString().trim();
-                if(q.length()==0){ Toast.makeText(MainActivity.this,"Type a question first",Toast.LENGTH_SHORT).show(); return; }
-                chat.addView(spacer(10));
-                chat.addView(text("You: " + q, 14, WHITE, true));
-                String answer = "The assignment is to prepare short notes on Machine Learning algorithms and submit them by Friday. The professor also asked students to understand the difference between supervised and unsupervised learning.";
-                TextView a = text("Recapify: " + answer, 14, CYAN, false);
-                a.setPadding(0,dp(8),0,0);
-                chat.addView(a);
-                input.setText("");
-            }
-        });
-        content.addView(send, blockButtonParams());
-    }
-
-    private void showAnalytics() {
-        clear("ANALYTICS");
-        content.addView(text("Your Recapify Impact", 27, WHITE, true));
-        TextView d = text("A quick view of how much meeting time you’ve recovered.", 14, MUTED, false);
-        d.setPadding(0,dp(5),0,dp(18));
-        content.addView(d);
-
-        LinearLayout one = new LinearLayout(this);
-        one.setOrientation(LinearLayout.HORIZONTAL);
-        one.addView(stat("4.2h", "Time Saved", GREEN), smallWeight());
-        one.addView(stat("12", "Meetings", CYAN), smallWeight());
-        content.addView(one);
-        LinearLayout two = new LinearLayout(this);
-        two.setOrientation(LinearLayout.HORIZONTAL);
-        two.setPadding(0,dp(10),0,dp(16));
-        two.addView(stat("8", "Tasks Found", ORANGE), smallWeight());
-        two.addView(stat("87%", "Focus Score", PURPLE), smallWeight());
-        content.addView(two);
-
-        LinearLayout intelligence = panel(CARD);
-        intelligence.addView(text("MEETING INTELLIGENCE", 12, PURPLE, true));
-        intelligence.addView(metric("Topics captured", "87%", CYAN));
-        intelligence.addView(metric("Important moments", "14", ORANGE));
-        intelligence.addView(metric("Questions detected", "7", GREEN));
-        intelligence.addView(metric("Deadlines detected", "3", PURPLE));
-        content.addView(intelligence);
-    }
-
-    private LinearLayout metric(String left, String right, int c) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0,dp(12),0,dp(3));
-        row.addView(text(left,14,MUTED,false), new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT,1));
-        row.addView(text(right,16,c,true));
-        return row;
-    }
-
-    private void openMeetingFile() {
-        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType("*/*");
-        startActivityForResult(i, 99);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 99 && resultCode == RESULT_OK && data != null){
-            Uri uri = data.getData();
-            Toast.makeText(this, "Meeting added to Recapify", Toast.LENGTH_LONG).show();
-            showCatchUp();
-        }
-    }
-
-    private LinearLayout topicRow(String time, String topic, int c, boolean missed) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0,dp(12),0,0);
-        TextView dot = text("●", 14, c, true);
-        row.addView(dot, new LinearLayout.LayoutParams(dp(26),ViewGroup.LayoutParams.WRAP_CONTENT));
-        row.addView(text(time,12,MUTED,false), new LinearLayout.LayoutParams(dp(54),ViewGroup.LayoutParams.WRAP_CONTENT));
-        row.addView(text(topic,14,missed?WHITE:MUTED,missed), new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT,1));
-        if(missed) row.addView(text("MISSED",10,c,true));
-        return row;
-    }
-
-    private LinearLayout stat(String number, String label, int accent) {
-        LinearLayout box = panel(CARD);
-        box.setGravity(Gravity.CENTER);
-        TextView n = text(number, 24, accent, true);
-        n.setGravity(Gravity.CENTER);
-        TextView l = text(label, 11, MUTED, false);
-        l.setGravity(Gravity.CENTER);
-        box.addView(n);
-        box.addView(l);
-        return box;
-    }
-
-    private LinearLayout.LayoutParams smallWeight() {
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
-        p.setMargins(dp(4),0,dp(4),0);
-        return p;
-    }
-
-    private LinearLayout panel(int color) {
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(16),dp(16),dp(16),dp(16));
-        box.setBackground(round(color,22));
-        return box;
-    }
-
-    private TextView action(String label, int color) {
-        TextView t = text(label,14,WHITE,true);
-        t.setGravity(Gravity.CENTER);
-        t.setPadding(dp(12),dp(14),dp(12),dp(14));
-        t.setBackground(round(color,18));
-        return t;
-    }
-
-    private LinearLayout.LayoutParams blockButtonParams() {
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.setMargins(0,dp(14),0,0);
-        return p;
-    }
-
-    private TextView text(String s, int sp, int color, boolean bold) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(sp);
-        t.setTextColor(color);
-        if(bold) t.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        return t;
-    }
-
-    private GradientDrawable round(int color, int radius) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(color);
-        d.setCornerRadius(dp(radius));
-        return d;
-    }
-
-    private Space spacer(int h) {
-        Space s = new Space(this);
-        s.setLayoutParams(new LinearLayout.LayoutParams(1,dp(h)));
-        return s;
-    }
-
-    private int dp(int value) {
-        return (int)(value * getResources().getDisplayMetrics().density + 0.5f);
-    }
+    private void more(){clear("MORE");active(navMore);add(tv("Your workspace",27,WHITE,true));add(tv("Manage Recapify and explore features.",13,MUTED,false),4);
+        menu("▥","Meeting Library","Browse your saved meetings",v->library());menu("◉","Analytics","Productivity and recovery insights",v->analytics());menu("⌁","Notifications","Meeting reminders and AI updates",v->notifications());menu("⚙","Settings","Appearance, privacy and preferences",v->settings());menu("ⓘ","About Recapify","AI-powered meeting catch-up",v->about());}
+    private void menu(String icon,String h,String sub,View.OnClickListener l){LinearLayout b=box(CARD);b.setOrientation(LinearLayout.HORIZONTAL);TextView i=tv(icon,21,CYAN,true);i.setGravity(Gravity.CENTER);i.setBackground(bg(CARD2,14));b.addView(i,lp(dp(44),dp(44)));LinearLayout x=new LinearLayout(this);x.setOrientation(LinearLayout.VERTICAL);x.setPadding(dp(12),0,0,0);x.addView(tv(h,15,WHITE,true));x.addView(tv(sub,11,MUTED,false));b.addView(x,lp(0,-2));((LinearLayout.LayoutParams)x.getLayoutParams()).weight=1;b.setOnClickListener(l);add(b,8);}
+    private void library(){clear("MEETING LIBRARY");add(tv("12 meetings",27,WHITE,true));add(tv("Search and revisit your meeting intelligence.",13,MUTED,false),4);meetingCard("Artificial Intelligence — Unit 4","Today • 42 min • 4 topics",PURPLE,"ANALYZED");meetingCard("Software Engineering","Yesterday • 35 min • 6 topics",GREEN,"ANALYZED");meetingCard("Data Analytics","Sep 18 • 48 min • 8 topics",CYAN,"ANALYZED");}
+    private void meetingDetails(String name){new AlertDialog.Builder(this).setTitle(name).setMessage("AI analysis ready\n\n4 topics captured\n2 action items\n1 deadline\n3 questions detected\n\nOpen Catch Up to see a focused recap or Ask AI to explore the meeting.").setPositiveButton("Catch Up", (d,w)->catchUp()).setNeutralButton("Ask AI",(d,w)->ai()).setNegativeButton("Close",null).show();}
+    private void notifications(){new AlertDialog.Builder(this).setTitle("Notifications").setMessage("✦ Your DSA meeting starts in 48 minutes.\n\n✓ Recap generated for Artificial Intelligence.\n\n⚡ 2 action items are due tomorrow.").setPositiveButton("OK",null).show();}
+    private void profile(){new AlertDialog.Builder(this).setTitle("Yaswanth Reddy").setMessage("Student workspace\n\n12 meetings analyzed\n4.2 hours recovered\n8 action items tracked").setPositiveButton("Close",null).show();}
+    private void settings(){new AlertDialog.Builder(this).setTitle("Settings").setSingleChoiceItems(new String[]{"Dark mode (recommended)","Compact view","High contrast"},0,(d,w)->d.dismiss()).setNegativeButton("Close",null).show();}
+    private void about(){new AlertDialog.Builder(this).setTitle("Recapify ✦").setMessage("AI Meeting Intelligence\n\nCatch up faster. Remember better.\n\nBuilt as a student project with a focus on practical AI productivity features.").setPositiveButton("Nice!",null).show();}
+    private void taskDialog(){final EditText e=new EditText(this);e.setHint("Task name");e.setPadding(dp(20),dp(10),dp(20),dp(10));new AlertDialog.Builder(this).setTitle("Add task").setView(e).setPositiveButton("Add",(d,w)->{if(e.getText().length()>0)Toast.makeText(this,"Task added: "+e.getText(),Toast.LENGTH_SHORT).show();}).setNegativeButton("Cancel",null).show();}
+    private void pickFile(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");startActivityForResult(i,99);}
+    @Override protected void onActivityResult(int r,int c,Intent d){super.onActivityResult(r,c,d);if(r==99&&c==RESULT_OK&&d!=null){Toast.makeText(this,"Meeting imported successfully",Toast.LENGTH_LONG).show();catchUp();}}
 }
