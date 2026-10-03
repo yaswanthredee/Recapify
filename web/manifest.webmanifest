@@ -1,0 +1,10 @@
+{
+  "name":"Recapify — Meeting Intelligence",
+  "short_name":"Recapify",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#070811",
+  "theme_color":"#0a0b12",
+  "description":"AI-inspired meeting catch-up and summarization platform.",
+  "icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
